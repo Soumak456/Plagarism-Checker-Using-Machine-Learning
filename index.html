@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plagiarism Detector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-color: #f8f9fa;
+      --text-color: #2d3748;
+      --container-bg: #ffffff;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --secondary: #6b7280;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --header-bg: #4f46e5;
+      --footer-bg: #1f2937;
+      --footer-text: #e5e7eb;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body.dark {
+      --bg-color: #111827;
+      --text-color: #f3f4f6;
+      --container-bg: #1f2937;
+      --primary: #6366f1;
+      --primary-hover: #818cf8;
+      --secondary: #9ca3af;
+      --header-bg: #1f2937;
+      --footer-bg: #111827;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.25), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: var(--header-bg);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo i {
+      font-size: 1.75rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(30px);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background-color: var(--container-bg);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      flex-grow: 1;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+      text-align: center;
+    }
+
+    .input-section {
+      margin-bottom: 2rem;
+    }
+
+    .input-options {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background-color: var(--bg-color);
+      border: 1px solid var(--secondary);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .tab.active {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 1rem;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      background-color: transparent;
+      color: var(--text-color);
+      resize: vertical;
+      transition: border-color 0.3s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .file-upload {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      border: 2px dashed #d1d5db;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .file-upload:hover {
+      border-color: var(--primary);
+    }
+
+    .file-upload i {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .file-upload p {
+      margin-bottom: 0.5rem;
+    }
+
+    .file-upload small {
+      color: var(--secondary);
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-info {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--primary);
+      display: none;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .count {
+      color: var(--secondary);
+      font-size: 0.9rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background-color: var(--secondary);
+    }
+
+    .btn-secondary:hover {
+      background-color: #4b5563;
+    }
+
+    .result-section {
+      margin-top: 2rem;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .result-card {
+      background-color: var(--container-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--card-shadow);
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .result-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .copy-btn i {
+      font-size: 1.25rem;
+    }
+
+    .result-content {
+      margin-top: 1rem;
+    }
+
+    .plagiarism-status {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-badge {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .status-safe {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+
+    .status-danger {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+    }
+
+    .progress-container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .progress-circle {
+      position: relative;
+      width: 180px;
+      height: 180px;
+    }
+
+    .circle-bg {
+      fill: none;
+      stroke: #e5e7eb;
+      stroke-width: 10;
+    }
+
+    .circle-progress {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 10;
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 1s ease-in-out;
+    }
+
+    .circle-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .circle-text h3 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .circle-text p {
+      font-size: 1rem;
+      color: var(--secondary);
+    }
+
+    .sources-list {
+      margin-top: 1.5rem;
+    }
+
+    .sources-list h3 {
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .sources-list ul {
+      list-style: none;
+    }
+
+    .sources-list li {
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .sources-list a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: color 0.3s;
+      word-break: break-all;
+    }
+
+    .sources-list a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      background-color: var(--footer-bg);
+      color: var(--footer-text);
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+      }
+
+      .input-options {
+        flex-direction: column;
+      }
+
+      .progress-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <i class="fas fa-search"></i>
+      <span>Plagiarism Detector</span>
+    </div>
+    <div class="header-actions">
+      <label class="toggle-switch">
+        <input type="checkbox" id="modeToggle" onchange="toggleMode()">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </header>
+
+  <div class="container">
+    <h1>Check Your Content for Plagiarism</h1>
+    
+    <div class="input-section">
+      <div class="input-options">
+        <div class="tab active" onclick="switchTab('text')">Text Input</div>
+        <div class="tab" onclick="switchTab('file')">File Upload</div>
+      </div>
+
+      <form action="/detect" method="post" id="mainForm" enctype="multipart/form-data">
+        <div class="tab-content active" id="text-tab">
+          <textarea name="text" id="textInput" placeholder="Paste your text here to check for plagiarism..." required oninput="updateCount()"></textarea>
+        </div>
+
+        <div class="tab-content" id="file-tab">
+          <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload file</p>
+            <small>Supports PDF, TXT, DOCX (Max 5MB)</small>
+            <input type="file" id="fileInput" name="file" accept=".pdf,.txt,.docx" onchange="handleFileSelect()">
+          </div>
+          <div class="file-info" id="fileInfo"></div>
+        </div>
+
+        <div class="actions">
+          <div class="count">
+            <span id="wordCount">Words: 0</span> | 
+            <span id="charCount">Characters: 0</span>
+          </div>
+          <button type="submit" class="btn" id="submitBtn">
+            <i class="fas fa-search"></i> Check Plagiarism
+          </button>
+        </div>
+      </form>
+    </div>
+
+    {% if result %}
+    <div class="result-section">
+      <div class="result-card">
+        <div class="result-header">
+          <div class="result-title">Plagiarism Analysis</div>
+          <button class="copy-btn" onclick="copyResults()">
+            <i class="far fa-copy"></i> Copy
+          </button>
+        </div>
+        
+        <div class="result-content">
+          <div class="plagiarism-status">
+            <div class="status-badge {% if 'No' in result %}status-safe{% else %}status-danger{% endif %}">
+              {{ result }}
+            </div>
+          </div>
+
+          <div class="progress-container">
+            <div class="progress-circle">
+              <svg viewBox="0 0 100 100">
+                <circle class="circle-bg" cx="50" cy="50" r="45"></circle>
+                <circle class="circle-progress" cx="50" cy="50" r="45" 
+                  stroke-dasharray="283" 
+                  stroke-dashoffset="{% if 'No' in result %}283{% else %}0{% endif %}"></circle>
+              </svg>
+              <div class="circle-text">
+                <h3 id="plagiarismPercent">{% if 'No' in result %}0{% else %}100{% endif %}%</h3>
+                <p>Plagiarism</p>
+              </div>
+            </div>
+
+            <div class="progress-circle">
+              <svg viewBox="0 0 100 100">
+                <circle class="circle-bg" cx="50" cy="50" r="45"></circle>
+                <circle class="circle-progress" cx="50" cy="50" r="45" 
+                  stroke-dasharray="283" 
+                  stroke-dashoffset="{% if 'No' in result %}0{% else %}283{% endif %}"
+                  style="stroke: var(--success);"></circle>
+              </svg>
+              <div class="circle-text">
+                <h3 id="uniquePercent">{% if 'No' in result %}100{% else %}0{% endif %}%</h3>
+                <p>Unique</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if sources %}
+      <div class="result-card">
+        <div class="result-header">
+          <div class="result-title">Potential Sources</div>
+        </div>
+        
+        <div class="result-content">
+          <div class="sources-list">
+            <h3>We found similar content at these locations:</h3>
+            <ul>
+              {% for url in sources %}
+              <li>
+                <a href="{{ url }}" target="_blank"><i class="fas fa-external-link-alt"></i> {{ url }}</a>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <footer>
+    <div class="footer-content">
+      <p>© 2025 Plagiarism Detector | Powered by Flask & Machine Learning</p>
+      <p><i class="fas fa-code"></i> with <i class="fas fa-heart"></i> for original content</p>
+    </div>
+  </footer>
+
+  <script>
+    // Tab switching
+    function switchTab(tabName) {
+      // Update active tab
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      event.currentTarget.classList.add('active');
+      document.getElementById(tabName + '-tab').classList.add('active');
+    }
+
+    // File upload handling
+    function handleFileSelect() {
+      const fileInput = document.getElementById('fileInput');
+      const fileInfo = document.getElementById('fileInfo');
+      
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+        fileInfo.style.display = 'block';
+        
+        // Update character count for text files
+        if (file.type === 'text/plain') {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            document.getElementById('textInput').value = e.target.result;
+            updateCount();
+          };
+          reader.readAsText(file);
+        }
+      } else {
+        fileInfo.style.display = 'none';
+      }
+    }
+
+    // Word/character count
+    function updateCount() {
+      const text = document.getElementById('textInput').value;
+      const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+      document.getElementById('wordCount').textContent = `Words: ${words.length}`;
+      document.getElementById('charCount').textContent = `Characters: ${text.length}`;
+    }
+
+    // Dark mode toggle
+    function toggleMode() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+      updateThemeIcon();
+    }
+
+    function updateThemeIcon() {
+      const icon = document.getElementById('themeIcon');
+      if (document.body.classList.contains('dark')) {
+        icon.textContent = '🌞';
+      } else {
+        icon.textContent = '🌙';
+      }
+    }
+
+    // Check for saved theme preference
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+      document.getElementById('modeToggle').checked = true;
+    }
+    updateThemeIcon();
+
+    // Copy results to clipboard
+    function copyResults() {
+      const resultText = `Plagiarism Detection Result:\n${document.querySelector('.status-badge').textContent}\n\n` +
+                         `Plagiarism: ${document.getElementById('plagiarismPercent').textContent}\n` +
+                         `Unique: ${document.getElementById('uniquePercent').textContent}`;
+      
+      navigator.clipboard.writeText(resultText).then(() => {
+        const copyBtn = document.querySelector('.copy-btn');
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+        }, 2000);
+      });
+    }
+
+    // Initialize circular progress bars
+    function initProgressCircles() {
+      const plagiarismPercent = document.getElementById('plagiarismPercent').textContent.replace('%', '');
+      const uniquePercent = document.getElementById('uniquePercent').textContent.replace('%', '');
+      
+      const plagiarismCircle = document.querySelectorAll('.circle-progress')[0];
+      const uniqueCircle = document.querySelectorAll('.circle-progress')[1];
+      
+      // Calculate stroke dashoffset (283 is circumference of circle with r=45)
+      const plagiarismOffset = 283 - (283 * (plagiarismPercent / 100));
+      const uniqueOffset = 283 - (283 * (uniquePercent / 100));
+      
+      // Set the stroke dashoffset
+      plagiarismCircle.style.strokeDashoffset = plagiarismOffset;
+      uniqueCircle.style.strokeDashoffset = uniqueOffset;
+    }
+
+    // Initialize when page loads
+    window.addEventListener('DOMContentLoaded', () => {
+      updateCount();
+      initProgressCircles();
+    });
+  </script>
+</body>
+</html>
