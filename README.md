@@ -3,7 +3,7 @@ Developed a machine learning–based plagiarism detection system capable of iden
 
 The solution also includes:
 
-Web Interface (Flask/Streamlit): User-friendly application to upload text/documents and view results.
+Web Interface (Streamlit): User-friendly application to upload text/documents and view results.
 
 Visualization: Circular percentage graphs showing plagiarism score, highlighted plagiarized sections, and matched sources.
 
