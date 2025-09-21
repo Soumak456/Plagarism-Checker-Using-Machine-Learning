@@ -11,4 +11,4 @@ Web Search Integration: Detects online sources of copied content via Google Cust
 
 Advanced Features: Outlier detection, similarity threshold tuning, and AI-content detection.
 
-This project demonstrates skills in Python, NLP, machine learning, Flask/Streamlit, and data visualization, with applications in academia, publishing, and content verification.
+This project demonstrates skills in Python, NLP, machine learning, Streamlit, and data visualization, with applications in academia, publishing, and content verification.
